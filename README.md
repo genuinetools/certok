@@ -11,10 +11,10 @@ argument of the command. For example:
 
 ```console
 $ certok ~/hostsfile
-NAME                 SUBJECT                     ISSUER                                           ALGO                EXPIRES             SUNSET DATE
-telize.j3ss.co:443   telize.j3ss.co              Let's Encrypt Authority X3                       SHA256-RSA          77 days
-r.j3ss.co:443        r.j3ss.co                   Let's Encrypt Authority X3                       SHA256-RSA          77 days
-contained.af:443     contained.af                Let's Encrypt Authority X3                       SHA256-RSA          77 days
+NAME                 SUBJECT            ISSUER                        ALGO           EXPIRES     SUNSET DATE
+telize.j3ss.co:443   telize.j3ss.co     Let's Encrypt Authority X3    SHA256-RSA     77 days
+r.j3ss.co:443        r.j3ss.co          Let's Encrypt Authority X3    SHA256-RSA     77 days
+contained.af:443     contained.af       Let's Encrypt Authority X3    SHA256-RSA     77 days
 ```
 
 ```console
