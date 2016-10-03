@@ -1,6 +1,6 @@
 # certok
 
-[![Travis CI](https://travis-ci.org/jfrazelle/certok.svg?branch=master)](https://travis-ci.org/jfrazelle/certok)
+[![Travis CI](https://travis-ci.org/jessfraz/certok.svg?branch=master)](https://travis-ci.org/jessfraz/certok)
 
 Command line tool to check the validity and expiration dates of SSL certificates.
 
