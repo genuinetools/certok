@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"os"
@@ -98,7 +99,7 @@ func main() {
 
 	// create the writer
 	w := tabwriter.NewWriter(os.Stdout, 20, 1, 2, ' ', 0)
-	fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE")
+	fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE\tERROR")
 
 	// create the WaitGroup
 	var wg sync.WaitGroup
@@ -120,7 +121,11 @@ func main() {
 				if cert.warn {
 					expires = colorstring.Color("[red]" + cert.expires + "[reset]")
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset)
+				error := cert.error
+				if error != "" {
+					error = colorstring.Color("[red]" + cert.error + "[reset]")
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset, error)
 			}
 			wg.Done()
 		}()
@@ -138,6 +143,7 @@ type host struct {
 	issuer  string
 	expires string
 	warn    bool
+	error   string
 	sunset  *sunsetSignatureAlgorithm
 }
 
@@ -148,6 +154,20 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 	}
 	c, err := tls.Dial("tcp", h, nil)
 	if err != nil {
+		switch cerr := err.(type) {
+		case x509.CertificateInvalidError:
+			ht := createHost(h, twarn, cerr.Cert)
+			ht.error = err.Error()
+			return map[string]host{
+				string(cerr.Cert.Signature): ht,
+			}, nil
+		case x509.HostnameError:
+			ht := createHost(h, twarn, cerr.Certificate)
+			ht.error = err.Error()
+			return map[string]host{
+				string(cerr.Certificate.Signature): ht,
+			}, nil
+		}
 		return nil, fmt.Errorf("tcp dial %s failed: %v", h, err)
 	}
 	defer c.Close()
@@ -162,37 +182,43 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 				continue
 			}
 
-			host := host{
-				name:    h,
-				subject: cert.Subject.CommonName,
-				issuer:  cert.Issuer.CommonName,
-				algo:    cert.SignatureAlgorithm.String(),
-			}
+			ht := createHost(h, twarn, cert)
 
-			// check the expiration
-			if twarn.After(cert.NotAfter) {
-				host.warn = true
-			}
-			expiresIn := int64(cert.NotAfter.Sub(time.Now()).Hours())
-			if expiresIn <= 48 {
-				host.expires = fmt.Sprintf("%d hours", expiresIn)
-			} else {
-				host.expires = fmt.Sprintf("%d days", expiresIn/24)
-			}
-
-			// Check the signature algorithm, ignoring the root certificate.
-			if alg, exists := sunsetSignatureAlgorithms[cert.SignatureAlgorithm]; exists {
-				if cert.NotAfter.Equal(alg.date) || cert.NotAfter.After(alg.date) {
-					host.warn = true
-				}
-				host.sunset = &alg
-			}
-
-			certs[string(cert.Signature)] = host
+			certs[string(cert.Signature)] = ht
 		}
 	}
 
 	return certs, nil
+}
+
+func createHost(name string, twarn time.Time, cert *x509.Certificate) host {
+	host := host{
+		name:    name,
+		subject: cert.Subject.CommonName,
+		issuer:  cert.Issuer.CommonName,
+		algo:    cert.SignatureAlgorithm.String(),
+	}
+
+	// check the expiration
+	if twarn.After(cert.NotAfter) {
+		host.warn = true
+	}
+	expiresIn := int64(cert.NotAfter.Sub(time.Now()).Hours())
+	if expiresIn <= 48 {
+		host.expires = fmt.Sprintf("%d hours", expiresIn)
+	} else {
+		host.expires = fmt.Sprintf("%d days", expiresIn/24)
+	}
+
+	// Check the signature algorithm, ignoring the root certificate.
+	if alg, exists := sunsetSignatureAlgorithms[cert.SignatureAlgorithm]; exists {
+		if cert.NotAfter.Equal(alg.date) || cert.NotAfter.After(alg.date) {
+			host.warn = true
+		}
+		host.sunset = &alg
+	}
+
+	return host
 }
 
 func usageAndExit(message string, exitCode int) {
