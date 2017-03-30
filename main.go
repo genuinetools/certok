@@ -161,6 +161,12 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 			return map[string]host{
 				string(cerr.Cert.Signature): ht,
 			}, nil
+		case x509.UnknownAuthorityError:
+			ht := createHost(h, twarn, cerr.Cert)
+			ht.error = err.Error()
+			return map[string]host{
+				string(cerr.Cert.Signature): ht,
+			}, nil
 		case x509.HostnameError:
 			ht := createHost(h, twarn, cerr.Certificate)
 			ht.error = err.Error()
