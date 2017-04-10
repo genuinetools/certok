@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM golang:alpine
 MAINTAINER Jessica Frazelle <jess@linux.com>
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
@@ -11,7 +11,6 @@ COPY . /go/src/github.com/jessfraz/certok
 
 RUN set -x \
 	&& apk add --no-cache --virtual .build-deps \
-		go \
 		git \
 		gcc \
 		libc-dev \
@@ -24,3 +23,4 @@ RUN set -x \
 
 
 ENTRYPOINT [ "certok" ]
+CMD [ "--help" ]
