@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine as builder
 MAINTAINER Jessica Frazelle <jess@linux.com>
 
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
@@ -16,11 +16,15 @@ RUN set -x \
 		libc-dev \
 		libgcc \
 	&& cd /go/src/github.com/jessfraz/certok \
-	&& go build -o /usr/bin/certok . \
+	&& CGO_ENABLED=0 go build -a -tags netgo -ldflags '-extldflags "-static"' -o /usr/bin/certok . \
 	&& apk del .build-deps \
 	&& rm -rf /go \
 	&& echo "Build complete."
 
+FROM scratch
+
+COPY --from=builder /usr/bin/certok /usr/bin/certok
+COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
 ENTRYPOINT [ "certok" ]
 CMD [ "--help" ]
