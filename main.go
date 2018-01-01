@@ -13,15 +13,23 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/jessfraz/certok/version"
 	"github.com/mitchellh/colorstring"
 )
 
 const (
 	// BANNER is what is printed for help/info output.
-	BANNER = "certok - %s\n"
+	BANNER = `               _        _
+  ___ ___ _ __| |_ ___ | | __
+ / __/ _ \ '__| __/ _ \| |/ /
+| (_|  __/ |  | || (_) |   <
+ \___\___|_|   \__\___/|_|\_\
 
-	// VERSION is the binary version.
-	VERSION = "v0.1.0"
+ Check the validity and expiration dates of SSL certificates.
+ Version: %s
+ Build: %s
+
+`
 
 	defaultWarningDays = 30
 )
@@ -33,8 +41,8 @@ var (
 
 	all bool
 
-	debug   bool
-	version bool
+	debug bool
+	vrsn  bool
 )
 
 func init() {
@@ -45,19 +53,19 @@ func init() {
 
 	flag.BoolVar(&all, "all", false, "Show entire certificate chain, not just the first.")
 
-	flag.BoolVar(&version, "version", false, "print version and exit")
-	flag.BoolVar(&version, "v", false, "print version and exit (shorthand)")
+	flag.BoolVar(&vrsn, "version", false, "print version and exit")
+	flag.BoolVar(&vrsn, "v", false, "print version and exit (shorthand)")
 	flag.BoolVar(&debug, "d", false, "run in debug mode")
 
 	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, VERSION))
+		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, version.VERSION, version.GITCOMMIT))
 		flag.PrintDefaults()
 	}
 
 	flag.Parse()
 
-	if version {
-		fmt.Printf("%s", VERSION)
+	if vrsn {
+		fmt.Printf("certok version %s, build %s", version.VERSION, version.GITCOMMIT)
 		os.Exit(0)
 	}
 
