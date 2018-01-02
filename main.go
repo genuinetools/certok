@@ -12,9 +12,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/jessfraz/certok/version"
 	"github.com/mitchellh/colorstring"
+	"github.com/sirupsen/logrus"
 )
 
 const (
