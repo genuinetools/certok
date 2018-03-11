@@ -217,7 +217,7 @@ func createHost(name string, twarn time.Time, cert *x509.Certificate) host {
 	if twarn.After(cert.NotAfter) {
 		host.warn = true
 	}
-	expiresIn := int64(cert.NotAfter.Sub(time.Now()).Hours())
+	expiresIn := int64(time.Until(cert.NotAfter).Hours())
 	if expiresIn <= 48 {
 		host.expires = fmt.Sprintf("%d hours", expiresIn)
 	} else {
@@ -233,14 +233,4 @@ func createHost(name string, twarn time.Time, cert *x509.Certificate) host {
 	}
 
 	return host
-}
-
-func usageAndExit(message string, exitCode int) {
-	if message != "" {
-		fmt.Fprintf(os.Stderr, message)
-		fmt.Fprintf(os.Stderr, "\n\n")
-	}
-	flag.Usage()
-	fmt.Fprintf(os.Stderr, "\n")
-	os.Exit(exitCode)
 }
