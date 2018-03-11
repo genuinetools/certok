@@ -7,7 +7,7 @@ ENV GOPATH /go
 RUN	apk add --no-cache \
 	ca-certificates
 
-COPY . /go/src/github.com/jessfraz/certok
+COPY . /go/src/github.com/genuinetools/certok
 
 RUN set -x \
 	&& apk add --no-cache --virtual .build-deps \
@@ -16,7 +16,7 @@ RUN set -x \
 		libc-dev \
 		libgcc \
 		make \
-	&& cd /go/src/github.com/jessfraz/certok \
+	&& cd /go/src/github.com/genuinetools/certok \
 	&& make static \
 	&& mv certok /usr/bin/certok \
 	&& apk del .build-deps \
