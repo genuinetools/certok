@@ -1,6 +1,6 @@
 # certok
 
-[![Travis CI](https://travis-ci.org/jessfraz/certok.svg?branch=master)](https://travis-ci.org/jessfraz/certok)
+[![Travis CI](https://travis-ci.org/genuinetools/certok.svg?branch=master)](https://travis-ci.org/genuinetools/certok)
 
 Command line tool to check the validity and expiration dates of SSL certificates.
 
@@ -8,16 +8,16 @@ Command line tool to check the validity and expiration dates of SSL certificates
 
 #### Binaries
 
-- **darwin** [386](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-darwin-386) / [amd64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-darwin-amd64)
-- **freebsd** [386](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-freebsd-386) / [amd64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-freebsd-amd64)
-- **linux** [386](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-linux-386) / [amd64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-linux-amd64) / [arm](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-linux-arm) / [arm64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-linux-arm64)
-- **solaris** [amd64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-solaris-amd64)
-- **windows** [386](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-windows-386) / [amd64](https://github.com/jessfraz/certok/releases/download/v0.3.0/certok-windows-amd64)
+- **darwin** [386](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-darwin-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-darwin-amd64)
+- **freebsd** [386](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-freebsd-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-freebsd-amd64)
+- **linux** [386](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-linux-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-linux-amd64) / [arm](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-linux-arm) / [arm64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-linux-arm64)
+- **solaris** [amd64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-solaris-amd64)
+- **windows** [386](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-windows-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.3.0/certok-windows-amd64)
 
 #### Via Go
 
 ```bash
-$ go get github.com/jessfraz/certok
+$ go get github.com/genuinetools/certok
 ```
 
 ## Usage
