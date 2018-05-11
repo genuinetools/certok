@@ -159,14 +159,14 @@ func main() {
 
 type hosts []host
 
+func (h hosts) Len() int           { return len(h) }
+func (h hosts) Less(i, j int) bool { return h[i].name < h[j].name }
+func (h hosts) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
 type host struct {
 	name  string
 	certs map[string]certificate
 }
-
-func (h hosts) Len() int           { return len(h) }
-func (h hosts) Less(i, j int) bool { return h[i].name < h[j].name }
-func (h hosts) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 type certificate struct {
 	name    string
