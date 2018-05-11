@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"text/tabwriter"
@@ -105,12 +106,10 @@ func main() {
 	now := time.Now()
 	twarn := now.AddDate(years, months, days)
 
-	// create the writer
-	w := tabwriter.NewWriter(os.Stdout, 20, 1, 2, ' ', 0)
-	fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE\tERROR")
-
 	// create the WaitGroup
 	var wg sync.WaitGroup
+	hosts := hosts{}
+
 	for scanner.Scan() {
 		wg.Add(1)
 		h := scanner.Text()
@@ -119,32 +118,57 @@ func main() {
 			if err != nil {
 				logrus.Warn(err)
 			}
-			for _, cert := range certs {
-				sunset := ""
-				if cert.sunset != nil {
-					sunset = cert.sunset.date.Format("Jan 02, 2006")
-
-				}
-				expires := cert.expires
-				if cert.warn {
-					expires = colorstring.Color("[red]" + cert.expires + "[reset]")
-				}
-				error := cert.error
-				if error != "" {
-					error = colorstring.Color("[red]" + cert.error + "[reset]")
-				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset, error)
-			}
+			hosts = append(hosts, host{name: h, certs: certs})
 			wg.Done()
 		}()
 	}
+
 	// wait for all the goroutines to finish
 	wg.Wait()
+
+	// Sort the hosts
+	sort.Sort(hosts)
+
+	// create the writer
+	w := tabwriter.NewWriter(os.Stdout, 20, 1, 2, ' ', 0)
+	fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE\tERROR")
+
+	// Iterate over the hosts
+	for i := 0; i < len(hosts); i++ {
+		for _, cert := range hosts[i].certs {
+			sunset := ""
+			if cert.sunset != nil {
+				sunset = cert.sunset.date.Format("Jan 02, 2006")
+
+			}
+			expires := cert.expires
+			if cert.warn {
+				expires = colorstring.Color("[red]" + cert.expires + "[reset]")
+			}
+			error := cert.error
+			if error != "" {
+				error = colorstring.Color("[red]" + cert.error + "[reset]")
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset, error)
+		}
+	}
+
 	// flush the writer
 	w.Flush()
 }
 
+type hosts []host
+
 type host struct {
+	name  string
+	certs map[string]certificate
+}
+
+func (h hosts) Len() int           { return len(h) }
+func (h hosts) Less(i, j int) bool { return h[i].name < h[j].name }
+func (h hosts) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+type certificate struct {
 	name    string
 	subject string
 	algo    string
@@ -155,7 +179,7 @@ type host struct {
 	sunset  *sunsetSignatureAlgorithm
 }
 
-func checkHost(h string, twarn time.Time) (map[string]host, error) {
+func checkHost(h string, twarn time.Time) (map[string]certificate, error) {
 	if !strings.Contains(h, ":") {
 		// default to 443
 		h += ":443"
@@ -166,19 +190,19 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 		case x509.CertificateInvalidError:
 			ht := createHost(h, twarn, cerr.Cert)
 			ht.error = err.Error()
-			return map[string]host{
+			return map[string]certificate{
 				string(cerr.Cert.Signature): ht,
 			}, nil
 		case x509.UnknownAuthorityError:
 			ht := createHost(h, twarn, cerr.Cert)
 			ht.error = err.Error()
-			return map[string]host{
+			return map[string]certificate{
 				string(cerr.Cert.Signature): ht,
 			}, nil
 		case x509.HostnameError:
 			ht := createHost(h, twarn, cerr.Certificate)
 			ht.error = err.Error()
-			return map[string]host{
+			return map[string]certificate{
 				string(cerr.Certificate.Signature): ht,
 			}, nil
 		}
@@ -186,7 +210,7 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 	}
 	defer c.Close()
 
-	certs := make(map[string]host)
+	certs := make(map[string]certificate)
 	for _, chain := range c.ConnectionState().VerifiedChains {
 		for n, cert := range chain {
 			if _, checked := certs[string(cert.Signature)]; checked {
@@ -205,8 +229,8 @@ func checkHost(h string, twarn time.Time) (map[string]host, error) {
 	return certs, nil
 }
 
-func createHost(name string, twarn time.Time, cert *x509.Certificate) host {
-	host := host{
+func createHost(name string, twarn time.Time, cert *x509.Certificate) certificate {
+	host := certificate{
 		name:    name,
 		subject: cert.Subject.CommonName,
 		issuer:  cert.Issuer.CommonName,
