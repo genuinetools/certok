@@ -1,62 +1,58 @@
----
-  language: go
-  sudo: false
-  notifications:
-    email: true
-  go:
-    - 1.x
-    - tip
-  matrix:
-    allow_failures:
-      - go: tip
-    fast_finish: true
-  install:
-    - go get github.com/golang/lint/golint
-    - go get honnef.co/go/tools/cmd/staticcheck
-  script:
-    - make all
-    - make cover
-    - make release
-  after_success:
-    - bash <(curl -s https://codecov.io/bash)
-  deploy:
-    provider: releases
-    api_key:
-      secure: "fNizTjnRo0V3qwEP2sCz3Rsynfp2417sePanrgqZN66DyEGPFC0r1SWZWpJYDsnU+lLan/HOyaUcD9A7NntnQFX9od/HB8xKhayQ3X3L/4+82KZHayiYLQ+iUse2RIU0d2gd/S9qi5HcmajJKSBGVE2TZ1y7tCGg51iyNaFpkGA6bMQieo7lGY2rV8ZOiN3F+/KUmcRnwMxYm9BuQ4Y5i2+2wZqqNnhJ6+IrGvf1inHfN+NGhHBQAsOpVdmu2/2siAvFcckp5lIpwwVp7gUJwOkRevPdLkP7HxQcNIf7kUBtUszcg8daDcS4/OXS8KhbClfEnHBdIwHmVa9rPLJIgrWXBA0+smbP4MjmhoJe8KvlV3tQ6OiBpG2hCmo0LiJZi/GnSzutK53S/lrIpzs1QsAVhSU5thNG3Ltc/EfnQQUmw2RpL2Wm3UDTw4ZqopV60VO7w1rNPeCTu1Ch/FEDq27rqTLHN9HLS8bQgM7WjbXEY7msMYAjZR+y3NvL7dcXFHye2bVDWxxoedznVpp/Dg1Df5349WiesX4ZiDZUryRfKoH/MR3OKw78spUwqQIjQZadBFdhVu2x3kq9gHOSEJEqvYnJd+nS2cueIDN0ajhke30NIKetVAE/ro596K86X+Jti4/RtPB5Fn8h4j+m8usSnLxrrp1R3ridutVVtxw="
-    file:
-      - cross/certok-linux-amd64.md5
-      - cross/certok-windows-386.sha256
-      - cross/certok-linux-arm
-      - cross/certok-darwin-amd64.md5
-      - cross/certok-darwin-amd64
-      - cross/certok-solaris-amd64.md5
-      - cross/certok-linux-arm64.sha256
-      - cross/certok-linux-arm.sha256
-      - cross/certok-linux-386.sha256
-      - cross/certok-darwin-386.md5
-      - cross/certok-windows-386.md5
-      - cross/certok-freebsd-amd64.md5
-      - cross/certok-linux-arm64.md5
-      - cross/certok-linux-arm64
-      - cross/certok-freebsd-amd64.sha256
-      - cross/certok-freebsd-386.md5
-      - cross/certok-linux-amd64.sha256
-      - cross/certok-linux-386.md5
-      - cross/certok-freebsd-386
-      - cross/certok-solaris-amd64.sha256
-      - cross/certok-windows-amd64
-      - cross/certok-windows-amd64.md5
-      - cross/certok-windows-amd64.sha256
-      - cross/certok-linux-arm.md5
-      - cross/certok-darwin-386.sha256
-      - cross/certok-darwin-amd64.sha256
-      - cross/certok-windows-386
-      - cross/certok-solaris-amd64
-      - cross/certok-darwin-386
-      - cross/certok-linux-386
-      - cross/certok-freebsd-amd64
-      - cross/certok-freebsd-386.sha256
-      - cross/certok-linux-amd64
-    skip_cleanup: true
-    on:
-      tags: true
+language: go
+sudo: false
+go:
+  - 1.10.x
+before_install:
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/staticcheck
+jobs:
+  include:
+    - script: make all
+    - stage: Run Test Coverage
+      script: make cover
+      after_success: bash <(curl -s https://codecov.io/bash)
+    - stage: Build Release
+      script:
+        - make release
+        - echo "Deploying to GitHub releases ..."
+      deploy:
+        provider: releases
+        file:
+          - cross/certok-linux-amd64.md5
+          - cross/certok-windows-386.sha256
+          - cross/certok-linux-arm
+          - cross/certok-darwin-amd64.md5
+          - cross/certok-darwin-amd64
+          - cross/certok-solaris-amd64.md5
+          - cross/certok-linux-arm64.sha256
+          - cross/certok-linux-arm.sha256
+          - cross/certok-linux-386.sha256
+          - cross/certok-darwin-386.md5
+          - cross/certok-windows-386.md5
+          - cross/certok-freebsd-amd64.md5
+          - cross/certok-linux-arm64.md5
+          - cross/certok-linux-arm64
+          - cross/certok-freebsd-amd64.sha256
+          - cross/certok-freebsd-386.md5
+          - cross/certok-linux-amd64.sha256
+          - cross/certok-linux-386.md5
+          - cross/certok-freebsd-386
+          - cross/certok-solaris-amd64.sha256
+          - cross/certok-windows-amd64
+          - cross/certok-windows-amd64.md5
+          - cross/certok-windows-amd64.sha256
+          - cross/certok-linux-arm.md5
+          - cross/certok-darwin-386.sha256
+          - cross/certok-darwin-amd64.sha256
+          - cross/certok-windows-386
+          - cross/certok-solaris-amd64
+          - cross/certok-darwin-386
+          - cross/certok-linux-386
+          - cross/certok-freebsd-amd64
+          - cross/certok-freebsd-386.sha256
+          - cross/certok-linux-amd64
+        skip_cleanup: true
+        on:
+          tags: true
+        api_key:
+          secure: "fNizTjnRo0V3qwEP2sCz3Rsynfp2417sePanrgqZN66DyEGPFC0r1SWZWpJYDsnU+lLan/HOyaUcD9A7NntnQFX9od/HB8xKhayQ3X3L/4+82KZHayiYLQ+iUse2RIU0d2gd/S9qi5HcmajJKSBGVE2TZ1y7tCGg51iyNaFpkGA6bMQieo7lGY2rV8ZOiN3F+/KUmcRnwMxYm9BuQ4Y5i2+2wZqqNnhJ6+IrGvf1inHfN+NGhHBQAsOpVdmu2/2siAvFcckp5lIpwwVp7gUJwOkRevPdLkP7HxQcNIf7kUBtUszcg8daDcS4/OXS8KhbClfEnHBdIwHmVa9rPLJIgrWXBA0+smbP4MjmhoJe8KvlV3tQ6OiBpG2hCmo0LiJZi/GnSzutK53S/lrIpzs1QsAVhSU5thNG3Ltc/EfnQQUmw2RpL2Wm3UDTw4ZqopV60VO7w1rNPeCTu1Ch/FEDq27rqTLHN9HLS8bQgM7WjbXEY7msMYAjZR+y3NvL7dcXFHye2bVDWxxoedznVpp/Dg1Df5349WiesX4ZiDZUryRfKoH/MR3OKw78spUwqQIjQZadBFdhVu2x3kq9gHOSEJEqvYnJd+nS2cueIDN0ajhke30NIKetVAE/ro596K86X+Jti4/RtPB5Fn8h4j+m8usSnLxrrp1R3ridutVVtxw="
