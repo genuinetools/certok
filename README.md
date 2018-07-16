@@ -38,17 +38,19 @@ contained.af:443     contained.af       Let's Encrypt Authority X3    SHA256-RSA
 
 ```console
 $ certok -h
-certok - v0.5.1
-  -all
-        Show entire certificate chain, not just the first.
-  -d    run in debug mode
-  -days int
-        Warn if the certificate will expire within this many days.
-  -months int
-        Warn if the certificate will expire within this many months.
-  -v    print version and exit (shorthand)
-  -version
-        print version and exit
-  -years int
-        Warn if the certificate will expire within this many years.
+certok -  A tool to check the validity and expiration dates of SSL certificates.
+
+Usage: certok <command>
+
+Flags:
+
+  -all     Show entire certificate chain, not just the first. (default: false)
+  -d       enable debug logging (default: false)
+  -days    Warn if the certificate will expire within this many days. (default: 0)
+  -months  Warn if the certificate will expire within this many months. (default: 0)
+  -years   Warn if the certificate will expire within this many years. (default: 0)
+
+Commands:
+
+  version  Show the version information.
 ```
