@@ -1,22 +1,25 @@
 # certok
 
-[![Travis CI](https://travis-ci.org/genuinetools/certok.svg?branch=master)](https://travis-ci.org/genuinetools/certok)
+[![Travis CI](https://img.shields.io/travis/genuinetools/certok.svg?style=for-the-badge)](https://travis-ci.org/genuinetools/certok)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=for-the-badge)](https://godoc.org/github.com/genuinetools/certok)
+[![Github All Releases](https://img.shields.io/github/downloads/genuinetools/certok/total.svg?style=for-the-badge)](https://github.com/genuinetools/certok/releases)
 
 Command line tool to check the validity and expiration dates of SSL certificates.
+
+ * [Installation](README.md#installation)
+      * [Binaries](README.md#binaries)
+      * [Via Go](README.md#via-go)
+ * [Usage](README.md#usage)
 
 ## Installation
 
 #### Binaries
 
-- **darwin** [386](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-darwin-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-darwin-amd64)
-- **freebsd** [386](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-freebsd-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-freebsd-amd64)
-- **linux** [386](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-linux-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-linux-amd64) / [arm](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-linux-arm) / [arm64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-linux-arm64)
-- **solaris** [amd64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-solaris-amd64)
-- **windows** [386](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-windows-386) / [amd64](https://github.com/genuinetools/certok/releases/download/v0.5.1/certok-windows-amd64)
+For installation instructions from binaries please visit the [Releases Page](https://github.com/genuinetools/certok/releases).
 
 #### Via Go
 
-```bash
+```console
 $ go get github.com/genuinetools/certok
 ```
 

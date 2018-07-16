@@ -18,39 +18,39 @@ jobs:
       deploy:
         provider: releases
         file:
-          - cross/certok-linux-amd64.md5
-          - cross/certok-windows-386.sha256
-          - cross/certok-linux-arm
-          - cross/certok-darwin-amd64.md5
           - cross/certok-darwin-amd64
-          - cross/certok-solaris-amd64.md5
-          - cross/certok-linux-arm64.sha256
-          - cross/certok-linux-arm.sha256
-          - cross/certok-linux-386.sha256
+          - cross/certok-darwin-amd64.md5
+          - cross/certok-darwin-amd64.sha256
+          - cross/certok-darwin-386
           - cross/certok-darwin-386.md5
-          - cross/certok-windows-386.md5
+          - cross/certok-darwin-386.sha256
+          - cross/certok-freebsd-amd64
           - cross/certok-freebsd-amd64.md5
-          - cross/certok-linux-arm64.md5
-          - cross/certok-linux-arm64
           - cross/certok-freebsd-amd64.sha256
-          - cross/certok-freebsd-386.md5
-          - cross/certok-linux-amd64.sha256
-          - cross/certok-linux-386.md5
           - cross/certok-freebsd-386
+          - cross/certok-freebsd-386.md5
+          - cross/certok-freebsd-386.sha256
+          - cross/certok-linux-arm
+          - cross/certok-linux-arm.md5
+          - cross/certok-linux-arm.sha256
+          - cross/certok-linux-arm64
+          - cross/certok-linux-arm64.md5
+          - cross/certok-linux-arm64.sha256
+          - cross/certok-linux-amd64
+          - cross/certok-linux-amd64.md5
+          - cross/certok-linux-amd64.sha256
+          - cross/certok-linux-386
+          - cross/certok-linux-386.md5
+          - cross/certok-linux-386.sha256
+          - cross/certok-solaris-amd64
+          - cross/certok-solaris-amd64.md5
           - cross/certok-solaris-amd64.sha256
           - cross/certok-windows-amd64
           - cross/certok-windows-amd64.md5
           - cross/certok-windows-amd64.sha256
-          - cross/certok-linux-arm.md5
-          - cross/certok-darwin-386.sha256
-          - cross/certok-darwin-amd64.sha256
           - cross/certok-windows-386
-          - cross/certok-solaris-amd64
-          - cross/certok-darwin-386
-          - cross/certok-linux-386
-          - cross/certok-freebsd-amd64
-          - cross/certok-freebsd-386.sha256
-          - cross/certok-linux-amd64
+          - cross/certok-windows-386.md5
+          - cross/certok-windows-386.sha256
         skip_cleanup: true
         on:
           tags: true
