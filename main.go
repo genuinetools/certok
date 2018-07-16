@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -14,24 +15,14 @@ import (
 	"time"
 
 	"github.com/genuinetools/certok/version"
+	"github.com/genuinetools/pkg/cli"
 	"github.com/mitchellh/colorstring"
 	"github.com/sirupsen/logrus"
 )
 
+//
+
 const (
-	// BANNER is what is printed for help/info output.
-	BANNER = `               _        _
-  ___ ___ _ __| |_ ___ | | __
- / __/ _ \ '__| __/ _ \| |/ /
-| (_|  __/ |  | || (_) |   <
- \___\___|_|   \__\___/|_|\_\
-
- Check the validity and expiration dates of SSL certificates.
- Version: %s
- Build: %s
-
-`
-
 	defaultWarningDays = 30
 )
 
@@ -46,115 +37,119 @@ var (
 	vrsn  bool
 )
 
-func init() {
-	// parse flags
-	flag.IntVar(&years, "years", 0, "Warn if the certificate will expire within this many years.")
-	flag.IntVar(&months, "months", 0, "Warn if the certificate will expire within this many months.")
-	flag.IntVar(&days, "days", 0, "Warn if the certificate will expire within this many days.")
-
-	flag.BoolVar(&all, "all", false, "Show entire certificate chain, not just the first.")
-
-	flag.BoolVar(&vrsn, "version", false, "print version and exit")
-	flag.BoolVar(&vrsn, "v", false, "print version and exit (shorthand)")
-	flag.BoolVar(&debug, "d", false, "run in debug mode")
-
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(BANNER, version.VERSION, version.GITCOMMIT))
-		flag.PrintDefaults()
-	}
-
-	flag.Parse()
-
-	if vrsn {
-		fmt.Printf("certok version %s, build %s", version.VERSION, version.GITCOMMIT)
-		os.Exit(0)
-	}
-
-	// set log level
-	if debug {
-		logrus.SetLevel(logrus.DebugLevel)
-	}
-
-	// set the default warning days if not set already
-	if years == 0 && months == 0 && days == 0 {
-		days = defaultWarningDays
-	}
-
-}
-
 func main() {
-	args := flag.Args()
+	// Create a new cli program.
+	p := cli.NewProgram()
+	p.Name = "certok"
+	p.Description = "A tool to check the validity and expiration dates of SSL certificates"
 
-	// check if we are reading from a file or stdin
-	var (
-		scanner *bufio.Scanner
-	)
-	if len(args) == 0 {
-		logrus.Debugf("no file passed, reading from stdin...")
-		scanner = bufio.NewScanner(os.Stdin)
-	} else {
-		f, err := os.Open(args[0])
-		if err != nil {
-			logrus.Fatalf("opening file %s failed: %v", args[0], err)
-			os.Exit(1)
+	// Set the GitCommit and Version.
+	p.GitCommit = version.GITCOMMIT
+	p.Version = version.VERSION
+
+	// Setup the global flags.
+	p.FlagSet = flag.NewFlagSet("global", flag.ExitOnError)
+	p.FlagSet.IntVar(&years, "years", 0, "Warn if the certificate will expire within this many years.")
+	p.FlagSet.IntVar(&months, "months", 0, "Warn if the certificate will expire within this many months.")
+	p.FlagSet.IntVar(&days, "days", 0, "Warn if the certificate will expire within this many days.")
+
+	p.FlagSet.BoolVar(&all, "all", false, "Show entire certificate chain, not just the first.")
+
+	p.FlagSet.BoolVar(&debug, "d", false, "enable debug logging")
+
+	// Set the before function.
+	p.Before = func(ctx context.Context) error {
+		// Set the log level.
+		if debug {
+			logrus.SetLevel(logrus.DebugLevel)
 		}
-		defer f.Close()
-		scanner = bufio.NewScanner(f)
+
+		// set the default warning days if not set already
+		if years == 0 && months == 0 && days == 0 {
+			days = defaultWarningDays
+		}
+
+		return nil
 	}
 
-	// get the time now
-	now := time.Now()
-	twarn := now.AddDate(years, months, days)
-
-	// create the WaitGroup
-	var wg sync.WaitGroup
-	hosts := hosts{}
-
-	for scanner.Scan() {
-		wg.Add(1)
-		h := scanner.Text()
-		go func() {
-			certs, err := checkHost(h, twarn)
+	// Set the main program action.
+	p.Action = func(ctx context.Context, args []string) error {
+		// check if we are reading from a file or stdin
+		var (
+			scanner *bufio.Scanner
+		)
+		if len(args) == 0 {
+			logrus.Debugf("no file passed, reading from stdin...")
+			scanner = bufio.NewScanner(os.Stdin)
+		} else {
+			f, err := os.Open(args[0])
 			if err != nil {
-				logrus.Warn(err)
+				logrus.Fatalf("opening file %s failed: %v", args[0], err)
+				os.Exit(1)
 			}
-			hosts = append(hosts, host{name: h, certs: certs})
-			wg.Done()
-		}()
-	}
-
-	// wait for all the goroutines to finish
-	wg.Wait()
-
-	// Sort the hosts
-	sort.Sort(hosts)
-
-	// create the writer
-	w := tabwriter.NewWriter(os.Stdout, 20, 1, 2, ' ', 0)
-	fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE\tERROR")
-
-	// Iterate over the hosts
-	for i := 0; i < len(hosts); i++ {
-		for _, cert := range hosts[i].certs {
-			sunset := ""
-			if cert.sunset != nil {
-				sunset = cert.sunset.date.Format("Jan 02, 2006")
-
-			}
-			expires := cert.expires
-			if cert.warn {
-				expires = colorstring.Color("[red]" + cert.expires + "[reset]")
-			}
-			error := cert.error
-			if error != "" {
-				error = colorstring.Color("[red]" + cert.error + "[reset]")
-			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset, error)
+			defer f.Close()
+			scanner = bufio.NewScanner(f)
 		}
+
+		// get the time now
+		now := time.Now()
+		twarn := now.AddDate(years, months, days)
+
+		// create the WaitGroup
+		var wg sync.WaitGroup
+		hosts := hosts{}
+
+		for scanner.Scan() {
+			wg.Add(1)
+			h := scanner.Text()
+			go func() {
+				certs, err := checkHost(h, twarn)
+				if err != nil {
+					logrus.Warn(err)
+				}
+				hosts = append(hosts, host{name: h, certs: certs})
+				wg.Done()
+			}()
+		}
+
+		// wait for all the goroutines to finish
+		wg.Wait()
+
+		// Sort the hosts
+		sort.Sort(hosts)
+
+		// create the writer
+		w := tabwriter.NewWriter(os.Stdout, 20, 1, 2, ' ', 0)
+		fmt.Fprintln(w, "NAME\tSUBJECT\tISSUER\tALGO\tEXPIRES\tSUNSET DATE\tERROR")
+
+		// Iterate over the hosts
+		for i := 0; i < len(hosts); i++ {
+			for _, cert := range hosts[i].certs {
+				sunset := ""
+				if cert.sunset != nil {
+					sunset = cert.sunset.date.Format("Jan 02, 2006")
+
+				}
+				expires := cert.expires
+				if cert.warn {
+					expires = colorstring.Color("[red]" + cert.expires + "[reset]")
+				}
+				error := cert.error
+				if error != "" {
+					error = colorstring.Color("[red]" + cert.error + "[reset]")
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cert.name, cert.subject, cert.issuer, cert.algo, expires, sunset, error)
+			}
+		}
+
+		// flush the writer
+		w.Flush()
+
+		return nil
 	}
 
-	// flush the writer
-	w.Flush()
+	// Run our program.
+	p.Run()
 }
 
 type hosts []host
