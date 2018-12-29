@@ -8,6 +8,11 @@ Command line tool to check the validity and expiration dates of SSL certificates
 
 <!-- toc -->
 
+- [Installation](#installation)
+    + [Binaries](#binaries)
+    + [Via Go](#via-go)
+- [Usage](#usage)
+
 <!-- tocstop -->
 
 ## Installation
