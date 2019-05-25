@@ -34,7 +34,6 @@ var (
 	all bool
 
 	debug bool
-	vrsn  bool
 )
 
 func main() {
